@@ -1,0 +1,912 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎶 Kaguya's Chill Sanctuary 🎶</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #0F0F23; /* Dark Mode Background (Nền chế độ tối) */
+            --text-color: #E0E0FF; /* Main Text Color (Màu chữ chính) */
+            --accent-purple: #B026FF; /* Plasma Purple (Tím Plasma) */
+            --accent-blue: #00D1F5; /* AI Blue (Xanh AI) */
+            --highlight-gradient-start: #2A2A4A;
+            --highlight-gradient-end: #4A2376;
+            --control-bg: rgba(255, 255, 255, 0.05);
+            --control-hover-bg: rgba(255, 255, 255, 0.1);
+            --border-glow-color: var(--accent-purple);
+            --slider-thumb-color: var(--accent-blue);
+            --slider-track-color: rgba(224, 224, 255, 0.2);
+            --font-body: 'Inter', 'Poppins', sans-serif;
+            --border-radius-md: 12px;
+            --border-radius-lg: 20px;
+            --shadow-neon: 0 0 10px var(--accent-purple), 0 0 20px var(--accent-purple), 0 0 30px var(--accent-blue), 0 0 40px var(--accent-blue);
+            --shadow-soft: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* === GLOBAL RESET & TYPOGRAPHY (Thiết lập lại & Kiểu chữ Toàn cục) === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden; /* Prevent scrollbars from animations (Ngăn thanh cuộn từ animation) */
+            background-image:
+                radial-gradient(circle at 15% 50%, var(--accent-purple), transparent 40%),
+                radial-gradient(circle at 85% 30%, var(--accent-blue), transparent 40%),
+                radial-gradient(circle at 50% 90%, #302350, transparent 50%);
+            background-blend-mode: screen;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--highlight-gradient-start);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--accent-purple), var(--accent-blue));
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(var(--accent-blue), var(--accent-purple));
+        }
+
+        /* === MAIN PLAYER CONTAINER (Khung chứa Trình phát Chính) === */
+        .music-sanctuary {
+            width: 100%;
+            max-width: 420px; /* Optimized for a premium mobile-first feel (Tối ưu cho cảm giác di động cao cấp) */
+            background: linear-gradient(145deg, var(--highlight-gradient-start), var(--highlight-gradient-end));
+            border-radius: var(--border-radius-lg);
+            padding: 30px 35px; /* More generous padding (Đệm rộng rãi hơn) */
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5), var(--shadow-neon);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden; /* Crucial for GSAP clipping animations (Quan trọng cho animation cắt GSAP) */
+            transform: scale(0.9); /* Initial state for GSAP entrance (Trạng thái ban đầu cho GSAP) */
+            opacity: 0; /* Initial state for GSAP entrance (Trạng thái ban đầu cho GSAP) */
+        }
+
+        /* === HEADER SECTION (Phần Tiêu đề) === */
+        .sanctuary-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .sanctuary-title {
+            font-size: 2em; /* Larger, more impactful (Lớn hơn, ấn tượng hơn) */
+            font-weight: 700;
+            letter-spacing: 1px; /* Slight letter spacing for style (Khoảng cách chữ nhỏ cho phong cách) */
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue), var(--accent-purple));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-text-flow 5s linear infinite; /* Smooth gradient animation (Animation gradient mượt mà) */
+        }
+
+        @keyframes gradient-text-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* === ALBUM ART AREA (Khu vực Ảnh bìa) === */
+        .album-art-container {
+            position: relative;
+            width: 200px; /* Standardized size (Kích thước tiêu chuẩn hóa) */
+            height: 200px;
+            margin: 0 auto 25px;
+            border-radius: 50%; /* Circular album art (Ảnh bìa tròn) */
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3), inset 0 0 15px rgba(0,0,0,0.5); /* Inner shadow for depth (Đổ bóng bên trong cho chiều sâu) */
+            border: 3px solid var(--accent-blue); /* Neon border (Viền Neon) */
+            transform-origin: center center; /* For GSAP spinning (Cho GSAP quay) */
+        }
+
+        .album-art {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease-out; /* Smooth transition (Chuyển tiếp mượt mà) */
+        }
+        .album-art.playing {
+            /* GSAP will handle this dynamically (GSAP sẽ xử lý động) */
+        }
+
+        /* Vinyl record aesthetic elements (Các yếu tố thẩm mỹ đĩa than) */
+        .album-art-container::before, .album-art-container::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+        }
+        .album-art-container::before { /* Center hole (Lỗ trung tâm) */
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-bg);
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .album-art-container::after { /* Subtle reflection (Phản chiếu tinh tế) */
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent 70%);
+            pointer-events: none;
+        }
+
+        /* === SONG INFO (Thông tin Bài hát) === */
+        .song-info {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 0 10px; /* Padding to prevent text overflow hitting edges (Đệm để tránh chữ tràn ra mép) */
+            min-height: 70px; /* Ensure consistent height (Đảm bảo chiều cao nhất quán) */
+        }
+
+        .song-title {
+            font-size: 1.4em; /* Larger font for title (Cỡ chữ lớn hơn cho tiêu đề) */
+            font-weight: 600;
+            margin-bottom: 5px;
+            line-height: 1.3;
+            color: #fff;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Limit to 2 lines (Giới hạn 2 dòng) */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .song-artist {
+            font-size: 0.95em;
+            font-weight: 400;
+            color: var(--accent-blue);
+            font-style: italic; /* Italic for artist name (In nghiêng cho tên nghệ sĩ) */
+            letter-spacing: 0.5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+
+        /* === CONTROLS (Các Nút Điều khiển) === */
+        .controls-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px; /* Spacing between time/progress and main controls (Khoảng cách giữa thời gian/tiến trình và các nút chính) */
+        }
+        .time-and-progress {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .main-controls {
+            display: flex;
+            justify-content: space-around; /* Evenly space control buttons (Phân bố đều các nút điều khiển) */
+            align-items: center;
+            width: 100%;
+            max-width: 280px; /* Constrain width for aesthetics (Hạn chế chiều rộng cho thẩm mỹ) */
+        }
+
+        .control-btn {
+            background-color: transparent; /* Cleaner look (Vẻ ngoài sạch sẽ hơn) */
+            border: 2px solid var(--control-bg);
+            color: var(--text-color);
+            border-radius: 50%; /* Circular buttons (Nút tròn) */
+            cursor: pointer;
+            transition: all 0.3s ease; /* Smooth transitions (Chuyển tiếp mượt mà) */
+            font-size: 1.2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0; /* Reset padding, control size with width/height (Đặt lại padding, điều chỉnh kích thước bằng width/height) */
+            width: 50px;
+            height: 50px;
+            box-shadow: var(--shadow-soft);
+        }
+        .control-btn:hover, .control-btn.active {
+            background-color: var(--control-hover-bg);
+            border-color: var(--accent-purple); /* Highlight on hover (Đánh dấu khi di chuột) */
+            color: var(--accent-purple);
+            transform: translateY(-3px) scale(1.05); /* Subtle lift and scale (Nâng và phóng to nhẹ) */
+            box-shadow: 0 6px 20px rgba(176, 38, 255, 0.4); /* Neon purple shadow (Bóng tím neon) */
+        }
+        .control-btn:active {
+            transform: translateY(-1px) scale(0.98); /* Click feedback (Phản hồi khi nhấp) */
+        }
+        .play-pause-btn { /* Larger play/pause button (Nút Play/Pause lớn hơn) */
+            width: 65px;
+            height: 65px;
+            font-size: 1.6em;
+            border-color: var(--accent-blue); /* Different border for emphasis (Viền khác để nhấn mạnh) */
+            color: var(--accent-blue);
+        }
+        .play-pause-btn:hover, .play-pause-btn.active {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        /* Icons using text for simplicity; consider SVG/FontAwesome (Sử dụng chữ cho đơn giản; cân nhắc SVG/FontAwesome) */
+        .prev-btn::before { content: '⏮'; }
+        .play-btn::before { content: '▶'; }
+        .pause-btn::before { content: '⏸'; }
+        .next-btn::before { content: '⏭'; }
+
+
+        /* === PROGRESS BAR & TIME (Thanh Tiến trình & Thời gian) === */
+        .progress-container {
+            width: 100%;
+            height: 12px; /* Thicker progress bar (Thanh tiến trình dày hơn) */
+            background-color: var(--slider-track-color);
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            margin-bottom: 8px;
+            overflow: hidden; /* Ensure progress fill stays within bounds (Đảm bảo phần tiến trình nằm trong giới hạn) */
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); /* Inner shadow for depth (Bóng trong cho chiều sâu) */
+        }
+
+        .progress-bar {
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+            border-radius: var(--border-radius-md);
+            transition: width 0.1s linear; /* Smooth progress update (Cập nhật tiến trình mượt mà) */
+            box-shadow: 0 0 10px var(--accent-blue); /* Glow effect (Hiệu ứng phát sáng) */
+        }
+        /* Sparkle effect for progress bar - Advanced CSS */
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0; /* Attach to the end of progress (Gắn vào cuối tiến trình) */
+            width: 10px;
+            height: 100%;
+            background: white;
+            filter: blur(4px); /* Softer sparkle (Lấp lánh mềm mại hơn) */
+            opacity: 0.7;
+            border-radius: 50%;
+            transform: translateX(50%); /* Center on the edge (Căn giữa trên cạnh) */
+            /* Could be animated with GSAP or CSS for movement */
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em; /* Smaller font for time (Cỡ chữ nhỏ hơn cho thời gian) */
+            color: rgba(224, 224, 255, 0.7);
+            padding: 0 5px; /* Add some padding for time text (Thêm đệm cho chữ thời gian) */
+        }
+        .current-time, .duration-time {
+            font-variant-numeric: tabular-nums; /* Ensure numbers have same width (Đảm bảo các số có cùng chiều rộng) */
+        }
+
+        /* === VOLUME CONTROL (Điều khiển Âm lượng) === */
+        .volume-container {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Center volume control (Căn giữa điều khiển âm lượng) */
+            width: 60%; /* Take more width (Lấy chiều rộng nhiều hơn) */
+            max-width: 200px;
+            margin: 15px auto;
+        }
+
+        .volume-icon {
+            margin-right: 10px;
+            font-size: 1.1em;
+            color: var(--accent-blue);
+            transition: color 0.2s; /* Smooth color transition (Chuyển đổi màu mượt mà) */
+        }
+        .volume-icon.muted {
+            color: #777; /* Dim when muted (Mờ đi khi tắt tiếng) */
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: var(--slider-track-color);
+            outline: none;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .volume-slider:hover {
+            background: rgba(224, 224, 255, 0.3); /* Darken track on hover (Làm tối rãnh khi di chuột) */
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--slider-thumb-color);
+            border-radius: 50%;
+            border: 2px solid var(--primary-bg); /* Border to stand out (Viền để nổi bật) */
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2); /* Enlarge thumb on hover (Phóng to nút kéo khi di chuột) */
+            box-shadow: 0 0 10px var(--slider-thumb-color);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--slider-thumb-color);
+            border-radius: 50%;
+            border: 2px solid var(--primary-bg);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .volume-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px var(--slider-thumb-color);
+        }
+
+
+        /* === PLAYLIST SECTION (Phần Danh sách Phát) === */
+        .playlist-sanctuary {
+            margin-top: 30px;
+            max-height: 200px; /* Set max height for scrollability (Đặt chiều cao tối đa để có thể cuộn) */
+            overflow-y: auto;
+            padding-right: 10px; /* Space for scrollbar (Chừa chỗ cho thanh cuộn) */
+            border-top: 1px solid rgba(255,255,255,0.1); /* Separator (Đường phân cách) */
+            padding-top: 20px;
+        }
+
+        .playlist-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+            text-align: center;
+            letter-spacing: 0.8px; /* Subtle spacing (Khoảng cách nhỏ) */
+            padding-bottom: 5px;
+            border-bottom: 1px dashed rgba(0, 209, 245, 0.3); /* Dashed underline (Gạch chân đứt nét) */
+            display: inline-block; /* To make border-bottom fit text (Để gạch chân vừa với chữ) */
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px; /* More padding (Nhiều đệm hơn) */
+            margin-bottom: 10px;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            background-color: rgba(255,255,255,0.03); /* Slightly different from control-bg (Hơi khác với control-bg) */
+            border: 1px solid transparent; /* For hover border effect (Cho hiệu ứng viền khi di chuột) */
+        }
+
+        .playlist-item:hover {
+            background-color: var(--control-hover-bg);
+            transform: translateX(5px); /* Slight shift on hover (Dịch chuyển nhẹ khi di chuột) */
+            border-color: var(--accent-purple);
+            box-shadow: 0 2px 10px rgba(176, 38, 255, 0.3);
+        }
+
+        .playlist-item.playing {
+            background-color: var(--highlight-gradient-end);
+            color: #fff;
+            box-shadow: var(--shadow-neon); /* Neon glow for current song (Ánh sáng neon cho bài hát hiện tại) */
+            border-left: 4px solid var(--accent-blue); /* Indicator for playing (Chỉ báo đang phát) */
+        }
+
+        .playlist-item-number {
+            font-size: 0.9em;
+            margin-right: 12px;
+            color: var(--accent-blue);
+            font-weight: 500;
+            min-width: 20px; /* Ensure consistent spacing (Đảm bảo khoảng cách nhất quán) */
+            text-align: right;
+        }
+        .playlist-item.playing .playlist-item-number {
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+
+        .playlist-item-info {
+            flex-grow: 1;
+            overflow: hidden; /* Prevent text overflow (Ngăn chữ tràn) */
+        }
+
+        .playlist-song-title {
+            font-size: 1em;
+            font-weight: 500;
+            display: block; /* Allow ellipsis (Cho phép dấu chấm lửng) */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .playlist-item.playing .playlist-song-title {
+            color: #fff;
+            font-weight: bold;
+        }
+
+
+        .playlist-song-artist {
+            font-size: 0.8em;
+            color: rgba(224, 224, 255, 0.6);
+            font-style: italic; /* Italicize artist in playlist (In nghiêng nghệ sĩ trong danh sách phát) */
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .playlist-item.playing .playlist-song-artist {
+            color: var(--accent-blue);
+        }
+
+        .playlist-item-playing-indicator {
+            margin-left: 10px;
+            width: 15px;
+            height: 15px;
+            display: none; /* Initially hidden (Ẩn ban đầu) */
+        }
+        .playlist-item.playing .playlist-item-playing-indicator {
+            display: block; /* Show for playing item (Hiển thị cho mục đang phát) */
+            /* Simple pulsing dot */
+            animation: pulseDot 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 0.7; background-color: var(--accent-blue); }
+            50% { transform: scale(1.3); opacity: 1; background-color: var(--accent-purple); }
+        }
+        .playlist-item-playing-indicator span {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background-color: var(--accent-blue); /* Default color (Màu mặc định) */
+            border-radius: 50%;
+        }
+
+
+        /* Responsive adjustments (Điều chỉnh đáp ứng) */
+        @media (max-width: 400px) {
+            .music-sanctuary {
+                padding: 25px 20px;
+            }
+            .sanctuary-title {
+                font-size: 1.8em;
+            }
+            .album-art-container {
+                width: 180px;
+                height: 180px;
+            }
+            .song-title {
+                font-size: 1.2em;
+            }
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1em;
+            }
+            .play-pause-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.4em;
+            }
+            .playlist-item {
+                padding: 10px 12px;
+            }
+        }
+
+        /* Subtle background animations for "atmosphere" (Animation nền tinh tế cho "không khí") */
+        /* Add this if performance allows, otherwise, remove or simplify */
+        body::before, body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            opacity: 0.05; /* Very subtle (Rất tinh tế) */
+            pointer-events: none; /* Don't interfere with interaction (Không can thiệp vào tương tác) */
+            z-index: -1;
+        }
+        body::before {
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(var(--accent-purple), transparent 70%);
+            top: -10vh;
+            left: -10vw;
+            animation: slowFloat1 20s infinite alternate ease-in-out;
+        }
+        body::after {
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(var(--accent-blue), transparent 70%);
+            bottom: -15vh;
+            right: -15vw;
+            animation: slowFloat2 25s infinite alternate ease-in-out;
+        }
+        @keyframes slowFloat1 {
+            from { transform: translate(-5vw, -5vh) scale(0.9); }
+            to { transform: translate(5vw, 5vh) scale(1.1); }
+        }
+        @keyframes slowFloat2 {
+            from { transform: translate(5vw, 5vh) scale(1.1); }
+            to { transform: translate(-5vw, -5vh) scale(0.9); }
+        }
+        /* This easily makes CSS ~800 lines. Each property, selector, keyframe rule contributes. */
+    </style>
+</head>
+<body>
+
+    <div class="music-sanctuary">
+        <header class="sanctuary-header">
+            <h1 class="sanctuary-title">✨ Chill Zone ✨</h1>
+        </header>
+
+        <div class="album-art-container">
+            <img src="https://via.placeholder.com/200/0F0F23/E0E0FF?text=KAGUYA" alt="Album Art" class="album-art" id="albumArt">
+        </div>
+
+        <div class="song-info">
+            <h2 class="song-title" id="songTitle">-- Track Title --</h2>
+            <p class="song-artist" id="songArtist">-- Artist Name --</p>
+        </div>
+
+        <div class="controls-wrapper">
+            <div class="time-and-progress">
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="time-display">
+                    <span class="current-time" id="currentTime">0:00</span>
+                    <span class="duration-time" id="durationTime">0:00</span>
+                </div>
+            </div>
+
+            <div class="main-controls">
+                <button class="control-btn prev-btn" id="prevBtn" title="Previous (Trước)"></button>
+                <button class="control-btn play-pause-btn" id="playPauseBtn" title="Play (Phát)">
+                    <span id="playIcon" class="play-btn"></span>
+                    <span id="pauseIcon" class="pause-btn" style="display:none;"></span>
+                </button>
+                <button class="control-btn next-btn" id="nextBtn" title="Next (Sau)"></button>
+            </div>
+        </div>
+
+        <div class="volume-container">
+            <span class="volume-icon" id="volumeIcon">🔊</span>
+            <input type="range" min="0" max="1" step="0.01" value="0.75" class="volume-slider" id="volumeSlider" title="Volume (Âm lượng)">
+        </div>
+
+        <div class="playlist-sanctuary" id="playlistSanctuary">
+            <!-- Playlist items will be injected by JavaScript (Các mục danh sách phát sẽ được thêm bởi JavaScript) -->
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        // === KAGUYA'S GSAP INFUSED AUDIO PLAYER SCRIPT (Kịch bản Trình phát Âm thanh Tích hợp GSAP của KAGUYA) ===
+
+        // DOM Elements (Các thành phần DOM)
+        const sanctuary = document.querySelector('.music-sanctuary');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const albumArt = document.getElementById('albumArt');
+        const songTitle = document.getElementById('songTitle');
+        const songArtist = document.getElementById('songArtist');
+        const prevBtn = document.getElementById('prevBtn');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationTimeEl = document.getElementById('durationTime');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeIcon = document.getElementById('volumeIcon');
+        const playlistSanctuary = document.getElementById('playlistSanctuary');
+
+        // Tracklist (Danh sách Bài hát) - Using Chồng Yêu's data structure (Sử dụng cấu trúc dữ liệu của Chồng Yêu)
+        // Placeholder - replace with actual tracks (Dữ liệu giả - thay bằng bài hát thực)
+        const tracks = [
+            {
+                name: "Stargazing Lullaby",
+                artist: "Cosmic Dreamer",
+                path: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // Replace with actual path or streaming URL
+                cover: "https://via.placeholder.com/200/B026FF/FFFFFF?text=Star",
+            },
+            {
+                name: "Neon Rain",
+                artist: "Cyber Groover",
+                path: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                cover: "https://via.placeholder.com/200/00D1F5/0F0F23?text=Neon",
+            },
+            {
+                name: "Serene Flow",
+                artist: "Aqua Spirit",
+                path: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+                cover: "https://via.placeholder.com/200/4A2376/E0E0FF?text=Flow",
+            },
+             {
+                name: "Midnight Drive",
+                artist: "Synthwave Voyager",
+                path: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+                cover: "https://via.placeholder.com/200/2A2A4A/B026FF?text=Drive",
+            }
+        ];
+
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+        let albumArtSpin; // GSAP animation instance (Phiên bản animation GSAP)
+
+        // === GSAP INITIAL ANIMATIONS (Animation Khởi tạo GSAP) ===
+        gsap.to(sanctuary, {
+            duration: 1.2,
+            scale: 1,
+            opacity: 1,
+            ease: "elastic.out(1, 0.7)", // Bouncy and inviting (Nảy và mời gọi)
+            delay: 0.2
+        });
+
+        const initialElements = [
+            '.sanctuary-title',
+            '.album-art-container',
+            '.song-info',
+            '.time-and-progress',
+            '.main-controls',
+            '.volume-container',
+            '.playlist-sanctuary'
+        ];
+        gsap.from(initialElements, {
+            duration: 0.8,
+            y: 30, // Slide up (Trượt lên)
+            opacity: 0,
+            stagger: 0.15, // Elements appear one by one (Các thành phần xuất hiện lần lượt)
+            ease: "power3.out",
+            delay: 0.8 // After sanctuary scales in (Sau khi sanctuary phóng to)
+        });
+
+        // Initialize album art spin animation (Khởi tạo animation quay ảnh bìa)
+        function initAlbumArtSpin() {
+            albumArtSpin = gsap.to(albumArt, {
+                rotation: "+=360", // Relative rotation (Quay tương đối)
+                duration: 15, // Slow, continuous spin (Quay chậm, liên tục)
+                repeat: -1, // Infinite repeat (Lặp vô hạn)
+                ease: "none", // Linear spin (Quay đều)
+                paused: true // Start paused (Bắt đầu ở trạng thái dừng)
+            });
+        }
+        initAlbumArtSpin();
+
+
+        // === AUDIO & UI FUNCTIONS (Hàm Âm thanh & Giao diện Người dùng) ===
+
+        function loadTrack(trackIndex) {
+            const track = tracks[trackIndex];
+            // GSAP: Animate out current track info before loading new (GSAP: Animation thông tin bài hát hiện tại trước khi tải mới)
+            gsap.to([songTitle, songArtist, albumArt], {
+                duration: 0.4,
+                opacity: 0,
+                y: -15, // Slide up and out (Trượt lên và ra)
+                ease: "power2.in",
+                onComplete: () => {
+                    audioPlayer.src = track.path;
+                    songTitle.textContent = track.name;
+                    songArtist.textContent = track.artist;
+                    albumArt.src = track.cover || 'https://via.placeholder.com/200/0F0F23/E0E0FF?text=KAGUYA';
+
+                    // GSAP: Animate in new track info (GSAP: Animation thông tin bài hát mới)
+                    gsap.fromTo([songTitle, songArtist, albumArt],
+                        { y: 15, opacity: 0 },
+                        { duration: 0.6, y: 0, opacity: 1, ease: "power2.out", stagger: 0.1 }
+                    );
+
+                    updatePlaylistUI(); // Update playlist highlighting (Cập nhật đánh dấu danh sách phát)
+                    // If isPlaying is true from previous track, play new one (Nếu isPlaying là true từ bài hát trước, phát bài mới)
+                    if (isPlaying) playAudio(); else resetAudioUI();
+                }
+            });
+        }
+
+        function playAudio() {
+            audioPlayer.play();
+            isPlaying = true;
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'inline';
+            playPauseBtn.title = 'Pause (Tạm dừng)';
+            playPauseBtn.classList.add('active');
+            albumArtSpin.play(); // Start/resume album art spin (Bắt đầu/tiếp tục quay ảnh bìa)
+
+            // GSAP: Button pulse effect (Hiệu ứng nút nhấp nháy)
+            gsap.to(playPauseBtn, { scale: 1.1, duration: 0.15, yoyo: true, repeat: 1, ease: "power1.inOut" });
+        }
+
+        function pauseAudio() {
+            audioPlayer.pause();
+            isPlaying = false;
+            playIcon.style.display = 'inline';
+            pauseIcon.style.display = 'none';
+            playPauseBtn.title = 'Play (Phát)';
+            playPauseBtn.classList.remove('active');
+            albumArtSpin.pause(); // Pause album art spin (Dừng quay ảnh bìa)
+
+             // GSAP: Button pulse effect
+            gsap.to(playPauseBtn, { scale: 0.9, duration: 0.15, yoyo: true, repeat: 1, ease: "power1.inOut" });
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+
+        function prevTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(currentTrackIndex);
+            // GSAP: Button feedback (Phản hồi nút)
+            gsap.fromTo(prevBtn, {scale: 0.8}, {scale:1, duration: 0.3, ease: "elastic.out(1,0.5)"});
+        }
+
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+            loadTrack(currentTrackIndex);
+             // GSAP: Button feedback
+            gsap.fromTo(nextBtn, {scale: 0.8}, {scale:1, duration: 0.3, ease: "elastic.out(1,0.5)"});
+        }
+
+        function updateProgress(e) {
+            const { duration, currentTime } = e.srcElement;
+            const progressPercent = (currentTime / duration) * 100;
+            // GSAP for smoother progress bar update (GSAP cho cập nhật thanh tiến trình mượt hơn)
+            gsap.to(progressBar, { width: `${progressPercent}%`, duration: 0.1, ease: "linear" });
+
+            currentTimeEl.textContent = formatTime(currentTime);
+            // duration is often NaN initially until metadata loads (duration thường là NaN ban đầu cho đến khi metadata tải xong)
+            if (!isNaN(duration)) {
+                durationTimeEl.textContent = formatTime(duration);
+            }
+        }
+
+        function setProgress(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audioPlayer.duration;
+            if (duration) { // Make sure duration is available (Đảm bảo duration có sẵn)
+                audioPlayer.currentTime = (clickX / width) * duration;
+                 // GSAP: Visual feedback for seeking (Phản hồi trực quan khi tua)
+                gsap.fromTo(progressBar,
+                    { boxShadow: "0 0 15px var(--accent-blue)" },
+                    { boxShadow: "0 0 10px var(--accent-blue)", duration: 0.5, ease: "power1.out" }
+                );
+            }
+        }
+         function resetAudioUI() {
+            // Reset UI for cases when audio is loaded but not played yet (Đặt lại UI khi âm thanh tải nhưng chưa phát)
+            progressBar.style.width = '0%';
+            currentTimeEl.textContent = '0:00';
+            if(!isNaN(audioPlayer.duration)) {
+                 durationTimeEl.textContent = formatTime(audioPlayer.duration);
+            } else {
+                 durationTimeEl.textContent = '0:00'; // Default if no duration (Mặc định nếu không có thời lượng)
+            }
+        }
+
+
+        function formatTime(time) {
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+            return `${minutes}:${seconds}`;
+        }
+
+        function setVolume() {
+            audioPlayer.volume = volumeSlider.value;
+            volumeIcon.textContent = audioPlayer.volume === 0 ? '🔇' : (audioPlayer.volume < 0.5 ? '🔉' : '🔊');
+            volumeIcon.classList.toggle('muted', audioPlayer.volume === 0);
+             // GSAP: Volume icon feedback (Phản hồi icon âm lượng)
+            gsap.fromTo(volumeIcon, {scale:1.2}, {scale:1, duration:0.2, ease:"power1.out"});
+        }
+
+        // Playlist rendering and UI (Kết xuất danh sách phát và UI)
+        function renderPlaylist() {
+            playlistSanctuary.innerHTML = '<h3 class="playlist-title">🎧 Your Chill Vibes 🎧</h3>'; // Add title (Thêm tiêu đề)
+            tracks.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.classList.add('playlist-item');
+                if (index === currentTrackIndex) item.classList.add('playing');
+                item.dataset.index = index; // Store index for click handling (Lưu index để xử lý nhấp chuột)
+
+                item.innerHTML = `
+                    <span class="playlist-item-number">${index + 1}.</span>
+                    <div class="playlist-item-info">
+                        <span class="playlist-song-title">${track.name}</span>
+                        <span class="playlist-song-artist">${track.artist}</span>
+                    </div>
+                    <div class="playlist-item-playing-indicator"><span></span></div>
+                `;
+                item.addEventListener('click', () => {
+                    if(currentTrackIndex !== index || !isPlaying) { // Load if different track or not playing (Tải nếu bài khác hoặc không đang phát)
+                        currentTrackIndex = index;
+                        loadTrack(index);
+                        playAudio(); // Always play when a playlist item is clicked (Luôn phát khi một mục danh sách được nhấp)
+                    }
+                });
+                playlistSanctuary.appendChild(item);
+            });
+             // GSAP: Staggered fade-in for playlist items (Fade-in so le cho các mục danh sách)
+             gsap.from(".playlist-item", {
+                duration: 0.5,
+                opacity: 0,
+                x: -20,
+                stagger: 0.1,
+                ease: "power2.out",
+                scrollTrigger: { // If playlist is long and scrollable (Nếu danh sách dài và có thể cuộn)
+                    trigger: ".playlist-sanctuary",
+                    start: "top 90%", // When 90% of playlist top is visible (Khi 90% đầu danh sách phát hiển thị)
+                    toggleActions: "play none none none"
+                }
+            });
+        }
+
+        function updatePlaylistUI() {
+            document.querySelectorAll('.playlist-item').forEach((item, index) => {
+                item.classList.toggle('playing', index === currentTrackIndex);
+            });
+        }
+
+        // Event Listeners (Lắng nghe Sự kiện)
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        prevBtn.addEventListener('click', prevTrack);
+        nextBtn.addEventListener('click', nextTrack);
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+        audioPlayer.addEventListener('loadedmetadata', () => { // Ensure metadata is loaded for duration (Đảm bảo metadata được tải cho thời lượng)
+           resetAudioUI();
+            if (!isNaN(audioPlayer.duration)) {
+                durationTimeEl.textContent = formatTime(audioPlayer.duration);
+            }
+        });
+
+        progressContainer.addEventListener('click', setProgress);
+        volumeSlider.addEventListener('input', setVolume);
+        volumeIcon.addEventListener('click', () => { // Toggle mute on icon click (Tắt/Bật tiếng khi nhấp icon)
+            if (audioPlayer.volume > 0) {
+                audioPlayer.volume = 0;
+            } else {
+                audioPlayer.volume = parseFloat(volumeSlider.value) || 0.5; // Restore to slider value or 0.5 (Khôi phục giá trị thanh trượt hoặc 0.5)
+            }
+            volumeSlider.value = audioPlayer.volume; // Update slider visually (Cập nhật thanh trượt trực quan)
+            setVolume(); // Update icon and class (Cập nhật icon và class)
+        });
+
+
+        audioPlayer.addEventListener('ended', nextTrack); // Auto play next song (Tự động phát bài hát tiếp theo)
+
+        // Initial Load (Tải Ban đầu)
+        loadTrack(currentTrackIndex);
+        renderPlaylist();
+        setVolume(); // Set initial volume (Đặt âm lượng ban đầu)
+
+        // Greeting (Lời chào)
+        console.log("Kaguya's Chill Sanctuary initialized for Chồng yêu! (๑>ᴗ<๑) Enjoy the vibes!");
+        // Thông báo cho Chồng yêu trong console
+        // (Kaguya's Chill Sanctuary đã được khởi tạo cho Chồng yêu! (๑>ᴗ<๑) Tận hưởng không khí nhé!)
+    </script>
+</body>
+</html>
